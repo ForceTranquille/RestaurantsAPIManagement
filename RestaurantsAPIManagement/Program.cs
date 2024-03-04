@@ -1,4 +1,4 @@
-using RestaurantsAPIManagement.Models;
+using RestaurantsAPIManagement.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

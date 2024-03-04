@@ -35,13 +35,12 @@ namespace RestaurantsAPIManagement.Controllers
                     if (mealsResponse?.Meals != null && mealsResponse.Meals.Any())
                     {
 
-                        //Just for proactivity, we are using FirstOrDefault as a second check if there is nothing in the response we will return OK but an empty list
                         var meal = mealsResponse.Meals.FirstOrDefault();
 
                         if (mealsResponse.Meals.Count() == 0) { return Ok(new MealsResponse()); }
 
 
-                        return Ok(meal); // Return just the meal
+                        return Ok(meal); 
                     }
                     else
                     {
@@ -55,7 +54,7 @@ namespace RestaurantsAPIManagement.Controllers
             }
             catch (HttpRequestException e)
             {
-                // Log the exception details
+                
                 return StatusCode(500, "An error occurred while fetching data from TheMealDB API.");
             }
         }
@@ -75,10 +74,10 @@ namespace RestaurantsAPIManagement.Controllers
 
                     if (mealResponse?.Meals != null && mealResponse.Meals.Any())
                     {
-                        var meal = mealResponse.Meals.FirstOrDefault(); // Assuming the API always returns one meal for a specific ID
+                        var meal = mealResponse.Meals.FirstOrDefault(); 
                         if (meal == null) { return NotFound("Meal not found."); }
 
-                        // Create a response model that only includes the attributes you're interested in
+                  
                         var selectedMeal = new
                         {
                             meal.StrMeal,
@@ -118,13 +117,11 @@ namespace RestaurantsAPIManagement.Controllers
                     return StatusCode((int)response.StatusCode, "Failed to retrieve data from TheMealDB.");
                 }
 
-                //return Ok(mealResponse);
-                //return Ok(response);
 
             }
             catch (HttpRequestException e)
             {
-                // Log the exception details
+               
                 return StatusCode(500, "An error occurred while fetching data from TheMealDB API.");
             }
         }

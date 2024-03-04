@@ -1,4 +1,6 @@
-﻿namespace RestaurantsAPIManagement.Models
+﻿using RestaurantsAPIManagement.Models;
+
+namespace RestaurantsAPIManagement.Data
 {
     public class MockRestaurantService
     {
@@ -27,7 +29,7 @@
             restaurant.RestaurantId = newId;
             _restaurants.Add(restaurant);
 
-            await Task.CompletedTask; 
+            await Task.CompletedTask;
         }
     }
 }
