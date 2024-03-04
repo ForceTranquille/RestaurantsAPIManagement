@@ -10,8 +10,8 @@ namespace RestaurantsAPIManagement.Data
         {
             _restaurants = new List<Restaurant>
             {
-                new Restaurant { RestaurantId = 1, RestaurantName = "Restaurant A", RestaurantAddress = "1517 Shattuck Ave, Berkeley, CA 94709", RestaurantMeals = new List<string>(){ "52842", "52960", "52953" } },
-                new Restaurant { RestaurantId = 2, RestaurantName = "Restaurant B", RestaurantAddress = "1234 Jean Talon, Montreal, CA 94709", RestaurantMeals = new List<string>(){ "52945", "52863", "53018" } },
+                new Restaurant { RestaurantId = 1, RestaurantName = "Restaurant A", RestaurantAddress = "1517 Shattuck Ave, Berkeley, CA 94709", RestaurantMeals = new Dictionary<string, int>(){ { "52842", 5 }, { "52960", 10 }, { "52953",4} } },
+                new Restaurant { RestaurantId = 2, RestaurantName = "Restaurant B", RestaurantAddress = "1234 Jean Talon, Montreal, CA 94709", RestaurantMeals = new Dictionary<string, int>(){ { "52945", 5 }, { "52863", 10 }, { "53018", 4} } },
             };
         }
         public async Task<List<Restaurant>> GetAllRestaurantsAsync()

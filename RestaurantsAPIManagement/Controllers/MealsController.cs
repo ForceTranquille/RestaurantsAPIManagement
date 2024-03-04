@@ -37,8 +37,10 @@ namespace RestaurantsAPIManagement.Controllers
 
                         var meal = mealsResponse.Meals.FirstOrDefault();
 
-                        if (mealsResponse.Meals.Count() == 0) { return Ok(new MealsResponse()); }
-
+                        if (mealsResponse.Meals.Count() == 0) 
+                        { 
+                            return Ok(new MealsResponse()); 
+                        }
 
                         return Ok(meal); 
                     }

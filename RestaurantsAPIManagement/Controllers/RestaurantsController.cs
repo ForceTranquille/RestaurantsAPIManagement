@@ -55,11 +55,9 @@ namespace RestaurantsAPIManagement.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAllMealsInARestaurant(int id)
         {
-            var restaurantMeals = (await _restaurantService.GetAllRestaurantsAsync()).Where(r => 
-                                                            r.RestaurantId == id).Select(m => 
-                                                            m.RestaurantMeals).FirstOrDefault();
+            var restaurant = (await _restaurantService.GetAllRestaurantsAsync()).FirstOrDefault(r => r.RestaurantId == id);
 
-            if (restaurantMeals == null || restaurantMeals.Count == 0)
+            if (restaurant == null || restaurant.RestaurantMeals.Count == 0)
             { 
                 return NotFound(); 
             }
@@ -67,11 +65,12 @@ namespace RestaurantsAPIManagement.Controllers
             List<Object> meals = new List<Object>();
 
             
-            foreach (var meal in restaurantMeals)
+            foreach (var mealEntry in restaurant.RestaurantMeals)
             {
+                var mealId = mealEntry.Key;
                 try
                 {
-                    var response = await _httpClient.GetAsync($"https://www.themealdb.com/api/json/v1/1/lookup.php?i={meal}");
+                    var response = await _httpClient.GetAsync($"https://www.themealdb.com/api/json/v1/1/lookup.php?i={mealId}");
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -81,23 +80,64 @@ namespace RestaurantsAPIManagement.Controllers
                         if (mealResponse?.Meals != null && mealResponse.Meals.Any())
                         {
                             var mealDb = mealResponse.Meals.FirstOrDefault();
-                            if (mealDb == null) 
-                            { 
-                                return NotFound("Meal not found."); 
+                            if (mealDb == null)
+                            {
+                                // return NotFound("Meal not found."); 
+                                continue;// If a meal is not found, continue to the next meal in the loop
                             }
-
-                 
                             var selectedMeal = new
                             {
                                 mealDb.StrMeal,
-                                mealDb.StrMealThumb
+                                mealDb.StrMealThumb,
+                                Quantity = mealEntry.Value // Including the quantity in the response
                             };
 
                             meals.Add(selectedMeal);
                         }
-                        else
+                    }
+                    else
+                    {
+                        // return NotFound("Meal not found.");
+                        continue;// Skip this meal and continue with the next one
+                    }
+                }
+                catch (HttpRequestException e)
+                {
+
+                    //return StatusCode(500, "An error occurred while fetching data from TheMealDB API.");
+                    continue;
+                }
+            }
+            if (!meals.Any())
+            {
+                return NotFound("No meals found for the restaurant.");
+            }
+            return Ok(meals);
+        }
+
+        [HttpPost("{restaurantId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AddMealToRestaurant(int restaurantId, string mealId = null, int mealQuantity = 0)
+        {
+            //var randomMeal = await _httpClient.GetAsync($"https://www.themealdb.com/api/json/v1/1/random.php");
+            if (mealId == null)
+            {
+                try
+                {
+                    var response = await _httpClient.GetAsync($"https://www.themealdb.com/api/json/v1/1/random.php");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var mealsResponse = JsonConvert.DeserializeObject<MealsResponse>(content);
+
+                        if (mealsResponse?.Meals != null && mealsResponse.Meals.Any())
                         {
-                            return NotFound("Meal not found.");
+
+                            var meal = mealsResponse.Meals.FirstOrDefault();
+
+                            if (mealsResponse.Meals.Count() == 0) { return Ok(new MealsResponse()); }
+
+                            mealId = mealsResponse.Meals.FirstOrDefault().IdMeal;
                         }
                     }
                     else
@@ -108,12 +148,25 @@ namespace RestaurantsAPIManagement.Controllers
                 }
                 catch (HttpRequestException e)
                 {
-                   
+                    // Log the exception details
                     return StatusCode(500, "An error occurred while fetching data from TheMealDB API.");
                 }
             }
 
-            return Ok(meals);
+            Restaurant getRestaurant = await _restaurantService.GetRestaurantByIdAsync(restaurantId);
+            if (getRestaurant == null) { return NotFound($"The restaurant with the ID:{restaurantId} does NOT exist!"); }
+            try
+            {
+                getRestaurant.RestaurantMeals.Add(mealId, mealQuantity);
+                return Ok($"Meal {mealId} added successfully.");
+            }
+            catch (Exception ex)
+            {
+
+                // Log the exception details
+                return StatusCode(500, $"An error occurred while adding the meal: {mealId} to the menu of the restaurant: {restaurantId}/{getRestaurant.RestaurantName}.");
+
+            }
         }
     }
 }

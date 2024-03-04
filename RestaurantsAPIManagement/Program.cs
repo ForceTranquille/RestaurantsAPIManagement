@@ -1,7 +1,7 @@
 using RestaurantsAPIManagement.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<MockRestaurantService>();
 // Register the IHttpClientFactory
 builder.Services.AddHttpClient();
 
